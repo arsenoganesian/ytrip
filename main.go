@@ -45,7 +45,7 @@ func main() {
 				log.Println("Error:", err)
 				continue
 			}
-			if _, err := bot.Send(tgbotapi.NewAudioUpload(update.Message.Chat.ID, audioFile)); err != nil {
+			if _, err := bot.Send(tgbotapi.NewAudioUpload(update.Message.Chat.ID, audioFile)); err == nil {
 				log.Println("Sent:", audioFile)
 			} else {
 				log.Println("Error:", err)
