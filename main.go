@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"regexp"
-	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -72,7 +72,7 @@ func downloadAudio(videoURL string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to download audio: %v\n%s", err, string(output))
 	}
-	audioFile := strings.TrimSpace(string(output))
+	audioFile := path.Clean(string(output))
 
 	return audioFile, nil
 }
