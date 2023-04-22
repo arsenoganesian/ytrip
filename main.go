@@ -93,7 +93,10 @@ func downloadAudio(videoURL string) (string, error) {
 func getFilename(videoURL string) (string, error) {
 	output, err := exec.Command(
 		"yt-dlp",
-		"-O", "%(title)s %(id)s",
+		"--restrict-filenames",
+		"--no-warnings",
+		"--print", "filename",
+		"-o", "%(title)s.mp3",
 		videoURL,
 	).CombinedOutput()
 
@@ -101,11 +104,7 @@ func getFilename(videoURL string) (string, error) {
 		return "", err
 	}
 
-	filename := strings.TrimSpace(string(output))
-	filename = filenameRegexp.ReplaceAllString(filename, "")
-	filename = strings.ReplaceAll(filename, " ", "_")
-	filename = filename + ".mp3"
-	p := path.Clean(filename)
+	p := path.Clean(strings.TrimSpace(string(output)))
 
 	log.Println("Path:", p)
 
