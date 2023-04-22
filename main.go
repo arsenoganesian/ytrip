@@ -12,8 +12,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var videoURLRegexp = regexp.MustCompile(`(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w-_]+)`)
-var filenameRegexp = regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
+var youtubeLinkRegexp = regexp.MustCompile(`(?i)https?:\/\/(?:www\.)?youtube.com\/watch\?v=[\w-]+&?(?:\S+)?|https?:\/\/(?:www\.)?youtu.be\/[\w-]+`)
 
 func main() {
 	botToken := os.Getenv("TG_BOT_TOKEN")
@@ -40,25 +39,33 @@ func main() {
 
 		log.Println("Processing:", update.Message.Chat.ID, update.Message.Text)
 
-		if videoURLRegexp.MatchString(update.Message.Text) {
+		youtubeLinks := findYoutubeLinks(update.Message.Text)
+
+		if len(youtubeLinks) > 0 {
 			log.Println("Downloading:", update.Message.Text)
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Downloading ..."))
-			audioFile, err := downloadAudio(update.Message.Text)
-			if err != nil {
-				log.Println("Error:", err)
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Download failed"))
-				continue
-			}
-			if _, err := bot.Send(tgbotapi.NewAudioUpload(update.Message.Chat.ID, audioFile)); err == nil {
-				log.Println("Sent:", audioFile)
-			} else {
-				log.Println("Error:", err)
+			for _, link := range youtubeLinks {
+				audioFile, err := downloadAudio(link)
+				if err != nil {
+					log.Println("Error:", err)
+					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Download failed"))
+					continue
+				}
+				if _, err := bot.Send(tgbotapi.NewAudioUpload(update.Message.Chat.ID, audioFile)); err == nil {
+					log.Println("Sent:", audioFile)
+				} else {
+					log.Println("Error:", err)
+				}
 			}
 		} else {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Welcome to ytrip, send yt link here"))
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Send yt link here"))
 			log.Println("Sent:", update.Message.Chat.ID, "Default")
 		}
 	}
+}
+
+func findYoutubeLinks(text string) []string {
+	return youtubeLinkRegexp.FindAllString(text, -1)
 }
 
 func downloadAudio(videoURL string) (string, error) {
