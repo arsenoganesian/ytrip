@@ -7,13 +7,16 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+var videoURLRegexp = regexp.MustCompile(`(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w-_]+)`)
+var filenameRegexp = regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
+
 func main() {
 	botToken := os.Getenv("TG_BOT_TOKEN")
-	videoURLRegexp := regexp.MustCompile(`(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w-_]+)`)
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
 		log.Fatal(err)
@@ -24,7 +27,6 @@ func main() {
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,7 +91,7 @@ func downloadAudio(videoURL string) (string, error) {
 func getFilename(videoURL string) (string, error) {
 	output, err := exec.Command(
 		"yt-dlp",
-		"-O", "%(title)s.%(id)s.mp3",
+		"-O", "%(title)s %(id)s",
 		videoURL,
 	).CombinedOutput()
 
@@ -97,5 +99,13 @@ func getFilename(videoURL string) (string, error) {
 		return "", err
 	}
 
-	return path.Clean(string(output)), nil
+	filename := strings.TrimSpace(string(output))
+	filename = filenameRegexp.ReplaceAllString(filename, "")
+	filename = strings.ReplaceAll(filename, " ", "_")
+	filename = filename + ".mp3"
+	p := path.Clean(filename)
+
+	log.Println("Path:", p)
+
+	return p, nil
 }
