@@ -42,9 +42,11 @@ func main() {
 
 		if videoURLRegexp.MatchString(update.Message.Text) {
 			log.Println("Downloading:", update.Message.Text)
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Downloading ..."))
 			audioFile, err := downloadAudio(update.Message.Text)
 			if err != nil {
 				log.Println("Error:", err)
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Download failed"))
 				continue
 			}
 			if _, err := bot.Send(tgbotapi.NewAudioUpload(update.Message.Chat.ID, audioFile)); err == nil {
