@@ -58,21 +58,44 @@ func main() {
 }
 
 func downloadAudio(videoURL string) (string, error) {
-	output, err := exec.Command(
+	filename, err := getFilename(videoURL)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to get filename: %v\n%s", err, videoURL)
+	}
+
+	err = exec.Command(
 		"yt-dlp",
-		"--no-simulate",
 		"--audio-format",
 		"mp3",
 		"-x",
-		"-o", "%(title)s.%(id)s.mp3",
+		"-o", filename,
+		videoURL,
+	).Run()
+
+	if err != nil {
+		return "", fmt.Errorf("failed to download audio: %v\n%s", err, filename)
+	}
+
+	fi, err := os.Stat(filename)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to open audio: %v\n%s", err, filename)
+	}
+
+	return fi.Name(), nil
+}
+
+func getFilename(videoURL string) (string, error) {
+	output, err := exec.Command(
+		"yt-dlp",
 		"-O", "%(title)s.%(id)s.mp3",
 		videoURL,
 	).CombinedOutput()
 
 	if err != nil {
-		return "", fmt.Errorf("failed to download audio: %v\n%s", err, string(output))
+		return "", err
 	}
-	audioFile := path.Clean(string(output))
 
-	return audioFile, nil
+	return path.Clean(string(output)), nil
 }
