@@ -69,11 +69,12 @@ func findYoutubeLinks(text string) []string {
 }
 
 func downloadAudio(videoURL string) (string, error) {
+	log.Println("Downloading:", videoURL)
 	filename, err := getFilename(videoURL)
-
 	if err != nil {
 		return "", fmt.Errorf("failed to get filename: %v\n%s", err, videoURL)
 	}
+	log.Println("Filename:", filename)
 
 	err = exec.Command(
 		"yt-dlp",
@@ -93,7 +94,7 @@ func downloadAudio(videoURL string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to open audio: %v\n%s", err, filename)
 	}
-
+	log.Println("Downloaded:", fi.Name())
 	return fi.Name(), nil
 }
 
