@@ -7,3 +7,5 @@ Easiest way to run it with docker
 ```
 docker pull ghcr.io/arsenoganesian/ytrip:main
 docker run -de 'TG_BOT_TOKEN=your_token' ghcr.io/arsenoganesian/ytrip:main
+```
+Try it [ytrip_bot](https://t.me/ytrip_bot)
