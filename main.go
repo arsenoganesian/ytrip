@@ -48,6 +48,7 @@ func main() {
 				audioFile, err := downloadAudio(link)
 				if err != nil {
 					log.Println("Error:", err)
+					os.Remove(audioFile)
 					bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Download failed"))
 					continue
 				}
@@ -56,9 +57,10 @@ func main() {
 				} else {
 					log.Println("Error:", err)
 				}
+				os.Remove(audioFile)
 			}
 		} else {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Send yt link here"))
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Send youtube.com or youtu.be link here"))
 			log.Println("Sent:", update.Message.Chat.ID, "Default")
 		}
 	}
@@ -84,13 +86,11 @@ func downloadAudio(videoURL string) (string, error) {
 		"-o", filename,
 		videoURL,
 	).Run()
-
 	if err != nil {
 		return "", fmt.Errorf("failed to download audio: %v\n%s", err, filename)
 	}
 
 	fi, err := os.Stat(filename)
-
 	if err != nil {
 		return "", fmt.Errorf("failed to open audio: %v\n%s", err, filename)
 	}
@@ -112,9 +112,9 @@ func getFilename(videoURL string) (string, error) {
 		return "", err
 	}
 
-	p := path.Clean(strings.TrimSpace(string(output)))
+	filename := path.Clean(strings.TrimSpace(string(output)))
 
-	log.Println("Path:", p)
+	log.Println("Path:", filename)
 
-	return p, nil
+	return filename, nil
 }
