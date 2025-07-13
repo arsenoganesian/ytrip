@@ -12,7 +12,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var youtubeLinkRegexp = regexp.MustCompile(`(?i)https?:\/\/(?:www\.)?youtube.com\/watch\?v=[\w-]+&?(?:\S+)?|https?:\/\/(?:www\.)?youtu.be\/[\w-]+`)
+var youtubeLinkRegexp = regexp.MustCompile(`(?i)https?:\/\/(?:www\.|music\.)?youtube.com\/watch\?v=[\w-]+&?(?:\S+)?|https?:\/\/(?:www\.)?youtu.be\/[\w-]+`)
 
 func main() {
 	botToken := os.Getenv("TG_BOT_TOKEN")
